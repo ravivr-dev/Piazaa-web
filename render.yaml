@@ -1,0 +1,62 @@
+services:
+  - type: web
+    name: piazza-web
+    env: ruby
+    plan: free
+    numInstances: 1
+    buildCommand: ./bin/render-build.sh
+    startCommand: bundle exec puma -C config/deploy/puma.rb
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: piazza-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: piazza-redis
+          type: redis
+          property: connectionString
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - fromGroup: domains
+
+  - type: worker
+    name: piazza-sidekiq
+    env: ruby
+    plan: starter
+    buildCommand:
+      bundle install && bundle exec rake assets:precompile
+    startCommand: bundle exec sidekiq -e production
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: piazza-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: piazza-redis
+          type: redis
+          property: connectionString
+      - key: RAILS_MASTER_KEY
+        sync: false
+      - fromGroup: domains
+
+  - type: redis
+    name: piazza-redis
+    plan: free
+    maxmemoryPolicy: noeviction
+    ipAllowList: []
+
+databases:
+  - name: piazza-db
+    plan: free
+
+envVarGroups:
+  - name: domains
+    envVars:
+      - key: DOMAIN_NAME
+        value: wedonttestinproduction.xyz
+      - key: OUTBOUND_EMAIL_DOMAIN
+        value: wedonttestinproduction.xyz
+      - key: INBOUND_EMAIL_DOMAIN
+        value: inbound.wedonttestinproduction.xyz

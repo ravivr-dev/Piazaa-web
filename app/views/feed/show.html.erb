@@ -1,0 +1,70 @@
+<%= content_for(:title) do %>
+  <%= @search&.query || t(".title") %>
+<% end %>
+
+<div class="container mt-3">
+  <%= tag.h1 class: "title" do %>
+    <% if logged_in? %>
+      <%= t(".welcome_with_name", name: Current.user.name) %>
+    <% else %>
+      <%= t(".welcome") %>
+    <% end %>
+  <% end unless turbo_native_app? %>
+
+  <%= render "feed/search", search: @search %>
+
+  <% page = params[:page].to_i || 1 %>
+  <%= turbo_frame_tag "feed_page_#{page}", target: "_top" do %>
+    <layout-columns class="columns is-centered is-multiline">
+      <%= render partial: @listings,
+            layout: "feed/listing_layout" %>
+    </layout-columns>
+
+    <%= turbo_frame_tag(
+          "feed_page_#{page + 1}",
+          target: "_top",
+          src: root_path(page: page + 1),
+          loading: :lazy,
+        ) do %>
+    <% end if turbo_native_app? && @pagy.next %>
+  <% end %>
+</div>
+
+<%= tag.div class: "container m-5 mt-6" do %>
+  <%= render "pagy/nav", pagy: @pagy %>
+<% end if show_paginator? %>
+
+<% if turbo_native_app? %>
+  <%= link_to t("sessions.new.submit"),
+        login_path,
+        data: {
+          controller: "bridge--element",
+          bridge_element_id:
+            turbo_native_bridge_element_id(:login),
+          bridge_element_ios: {
+            component: "bar_button",
+            index: "0"
+          }.to_json,
+          bridge_element_android: {
+            component: "menu_item",
+            order: "0"
+          }.to_json
+        } unless logged_in? %>
+
+  <%= link_to t("shared.navbar.create_ad"),
+        new_listing_path,
+        data: {
+          controller: "bridge--element",
+          bridge_element_id:
+            turbo_native_bridge_element_id(:new_listing),
+          bridge_element_ios: {
+            component: "bar_button",
+            icon: "plus",
+            index: "0"
+          }.to_json,
+          bridge_element_android: {
+            component: "menu_item",
+            order: "0"
+          }.to_json
+        } if logged_in? %>
+<% end %>

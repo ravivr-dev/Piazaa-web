@@ -1,0 +1,11 @@
+development:
+  adapter: redis
+  url: ""
+  channel_prefix: piazza_development
+
+test:
+  adapter: test
+
+production:
+  adapter: redis
+  url: ""

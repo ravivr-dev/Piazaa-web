@@ -1,0 +1,35 @@
+en:
+  listings:
+    new:
+      title: Create an ad
+      publish: Publish ad
+      save_as_draft: Save as draft
+    create:
+      success: Your ad has been published!
+    show:
+      posted_by: Posted by
+      edit: Edit
+      contact: Send message
+      location: Location
+    edit:
+      update: Update draft
+      publish: Update ad
+      delete: Delete
+      confirm_delete: Are you sure you'd like to delete this ad?
+    update:
+      success: Your ad has been updated!
+    destroy:
+      success: Your ad has been deleted!
+    tags_field:
+      description: >
+        You can add up to 5 tags to your ad.
+        These act as keywords which are matched in searches.
+      add_tag: Add Tag
+    form:
+      cover_photo: Upload a cover photo for your ad
+    breadcrumbs:
+      new: New ad
+      edit: Edit ad
+    save_button:
+      save: Save this ad
+      unsave: Unsave

@@ -1,0 +1,139 @@
+<%= content_for(:title) do %>
+  <%= @listing.title %>
+<% end %>
+
+<layout-columns class="columns is-centered">
+  <layout-column class="column is-10">
+    <%= tag.div class: "mb-3" do %>
+      <h1 class="title is-inline">
+        <%= @listing.title %>
+      </h1>
+      <% if @listing.edit? %>
+        <%= link_to t(".edit"), edit_listing_path(@listing) %>
+      <% end %>
+    <% end unless turbo_native_app? %>
+
+    <%= render "status", listing: @listing %>
+    <%= render "tags", listing: @listing %>
+
+    <div class="has-text-centered">
+      <%= link_to url_for(@listing.cover_photo) do %>
+        <figure class="image is-inline-block">
+          <%= image_tag @listing.cover_photo.variant(
+                resize_to_limit: [800, 800]
+              ) %>
+        </figure>
+      <% end %>
+    </div>
+
+    <layout-columns class="columns is-centered">
+      <layout-column class="box column mt-6 p-5 m-4">
+        <dl>
+          <dt class="has-text-grey">
+            <%= t(".posted_by") %>
+          </dt>
+          <dd class="has-text-weight-semibold is-size-5">
+            <%= @listing.creator.name %>
+          </dd>
+
+          <br>
+
+          <dt class="has-text-grey">
+            <%= t(".location") %>
+          </dt>
+          <dd class="has-text-weight-semibold is-size-5">
+            <%= @listing.address.redacted %>
+          </dd>
+        </dl>
+
+        <layout-group class="buttons mt-6">
+          <%= tag.div id: "save_button" do %>
+            <%= render "listings/save_button", listing: @listing %>
+          <% end if @listing.can_save? %>
+
+          <%= link_to listing_contact_path(@listing),
+                class: "button is-primary is-medium",
+                data: {
+                  turbo_frame: token_list(modal: !turbo_native_app?)
+                } do %>
+            <%= svg("message",
+                    class: "icon is-small mr-3",
+                    fill: "#fff") %>
+            <span><%= t(".contact") %></span>
+          <% end if @listing.can_contact? %>
+        </layout-group>
+      </layout-column>
+
+      <layout-column class="box column mt-6 p-5 m-4">
+        <dl>
+          <dt class="has-text-grey">
+            <%= Listing.human_attribute_name(:price) %>
+          </dt>
+          <dd class="has-text-weight-semibold is-size-5">
+            <%= "£#{@listing.price}" %>
+          </dd>
+
+          <br>
+
+          <dt class="has-text-grey">
+            <%= Listing.human_attribute_name(:condition) %>
+          </dt>
+          <dd class="has-text-weight-semibold is-size-5">
+            <%= @listing.human_enum_value(:condition) %>
+          </dd>
+
+          <br>
+
+          <dt class="has-text-grey">
+            <%= Listing.human_attribute_name(:description) %>
+          </dt>
+          <dd class="mt-3">
+            <%= @listing.description %>
+          </dd>
+        </dl>
+      </layout-column>
+    </layout-columns>
+  </layout-column>
+</layout-columns>
+
+<% if turbo_native_app? && @listing.edit? %>
+  <%= link_to t(".edit"),
+        edit_listing_path(@listing),
+        data: {
+          controller: "bridge--element",
+          bridge_element_id:
+            turbo_native_bridge_element_id(:edit),
+          bridge_element_ios: {
+            component: "bar_button",
+            icon: "pencil",
+            index: "0"
+          }.to_json,
+          bridge_element_android: {
+            component: "menu_item",
+            order: "0"
+          }.to_json
+        } %>
+
+  <%= button_to t(".delete"),
+        listing_path(@listing),
+        method: :delete,
+        data: {
+          controller: "bridge--element",
+          bridge_element_id:
+            turbo_native_bridge_element_id(:delete),
+          bridge_element_ios: {
+            component: "bar_button",
+            icon: "trash",
+            index: "1"
+          }.to_json,
+          bridge_element_android: {
+            component: "menu_item",
+            order: "1"
+          }.to_json
+        },
+        form: {
+          data: {
+            turbo_confirm: t("listings.edit.confirm_delete")
+          }
+        } %>
+<% end %>
